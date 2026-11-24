@@ -1,0 +1,23 @@
+@model MyProject.Models.PersonForm
+
+@{
+    ViewData["Title"] = "Успешно";
+}
+
+<div class="text-center mt-5">
+    <h1 class="text-success"> Заявка успешно отправлена!</h1>
+    <p class="lead">Спасибо, что заполнили анкету.</p>
+    <hr />
+    <h3>Ваши данные:</h3>
+    
+    <div class="card mx-auto" style="max-width: 400px;">
+        <div class="card-body text-start">
+            <p><strong>Имя:</strong> @Model.FirstName</p>
+            <p><strong>Фамилия:</strong> @Model.LastName</p>
+            <p><strong>Email:</strong> @Model.Email</p>
+            <p><strong>Возраст:</strong> @Model.Age</p>
+        </div>
+    </div>
+    
+    <a href="/Form" class="btn btn-outline-primary mt-4">Заполнить еще раз</a>
+</div>
