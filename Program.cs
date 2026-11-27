@@ -1,4 +1,4 @@
-using MyProject; // Важно! Подключаем наш Middleware
+using MyProject;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,21 +16,21 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Раздача статических файлов (css, js, картинки)
+app.UseStaticFiles(); 
+
 // --- ЖИЗНЕННЫЙ ЦИКЛ НАЧИНАЕТСЯ ЗДЕСЬ ---
-// 1. Наш Middleware стоит ДО маршрутизации, чтобы перехватывать все запросы
+// 1. Наш Middleware стоит ДО маршрутизации
 app.UseMiddleware<LifecycleMiddleware>();
 
-// 2. Маршрутизация (определяет, какой контроллер вызвать)
+// 2. Маршрутизация
 app.UseRouting();
 
 app.UseAuthorization();
 
-app.MapStaticAssets();
-
 // 3. Маршрут по умолчанию
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}")
-    .WithStaticAssets();
+    pattern: "{controller=Home}/{action=Index}/{id?}");
 
 app.Run();
