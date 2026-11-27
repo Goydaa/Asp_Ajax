@@ -1,9 +1,31 @@
 using MyProject;
+using Microsoft.OpenApi;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
+
+// --- НАСТРОЙКА SWAGGER ---
+builder.Services.AddSwaggerGen(c =>
+{
+    c.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "MyProject API",
+        Version = "v1",
+        Description = "API для управления документами с поддержкой ETag.",
+        Contact = new OpenApiContact
+        {
+            Name = "API Support",
+            Email = "support@example.com"
+        },
+        License = new OpenApiLicense
+        {
+            Name = "MIT",
+            Url = new Uri("https://opensource.org/licenses/MIT")
+        }
+    });
+});
 
 var app = builder.Build();
 
@@ -16,19 +38,23 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-// Раздача статических файлов (css, js, картинки)
+// Раздача статических файлов
 app.UseStaticFiles(); 
 
-// --- ЖИЗНЕННЫЙ ЦИКЛ НАЧИНАЕТСЯ ЗДЕСЬ ---
-// 1. Наш Middleware стоит ДО маршрутизации
+// --- ВКЛЮЧАЕМ SWAGGER UI ---
+app.UseSwagger();
+app.UseSwaggerUI(c =>
+{
+    c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyProject API v1");
+});
+
+// --- ЖИЗНЕННЫЙ ЦИКЛ ---
 app.UseMiddleware<LifecycleMiddleware>();
 
-// 2. Маршрутизация
 app.UseRouting();
 
 app.UseAuthorization();
 
-// 3. Маршрут по умолчанию
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
