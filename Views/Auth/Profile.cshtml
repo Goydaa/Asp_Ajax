@@ -1,0 +1,21 @@
+@using System.Security.Claims
+@{
+    ViewData["Title"] = "Профиль";
+}
+
+<div class="text-center">
+    <h2>Добро пожаловать в личный кабинет!</h2>
+    <p>Вы вошли как: <b>@User.Identity?.Name</b></p>
+    
+    <h4>Ваши права (Claims):</h4>
+    <ul>
+        @foreach (var claim in User.Claims)
+        {
+            <li>@claim.Type: @claim.Value</li>
+        }
+    </ul>
+
+    <form method="post" action="/Auth/Logout">
+        <button type="submit" class="btn btn-danger">Выйти</button>
+    </form>
+</div>

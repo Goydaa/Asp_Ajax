@@ -1,35 +1,33 @@
 using MyProject;
-using Microsoft.OpenApi;
+using Microsoft.OpenApi; // или Models, в зависимости от того, как у тебя сейчас
+using Microsoft.AspNetCore.Authentication.Cookies; // <--- ДОБАВИТЬ ЭТО
+using System.Security.Claims; // <--- ДОБАВИТЬ ЭТО
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// --- НАСТРОЙКА SWAGGER ---
+// --- ДОБАВЛЯЕМ АУТЕНТИФИКАЦИЮ ЧЕРЕЗ КУКИ ---
+builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+    .AddCookie(options =>
+    {
+        options.Cookie.Name = ".MyProject.Auth";
+        options.Cookie.HttpOnly = true;
+        options.LoginPath = "/Auth/Login";       // Куда перекидывать неавторизованных
+        options.AccessDeniedPath = "/Auth/AccessDenied"; // Куда перекидывать, если нет прав
+        options.ExpireTimeSpan = TimeSpan.FromMinutes(30);
+    });
+// --------------------------------------------
+
+builder.Services.AddAuthorization();
+
 builder.Services.AddSwaggerGen(c =>
 {
-    c.SwaggerDoc("v1", new OpenApiInfo
-    {
-        Title = "MyProject API",
-        Version = "v1",
-        Description = "API для управления документами с поддержкой ETag.",
-        Contact = new OpenApiContact
-        {
-            Name = "API Support",
-            Email = "support@example.com"
-        },
-        License = new OpenApiLicense
-        {
-            Name = "MIT",
-            Url = new Uri("https://opensource.org/licenses/MIT")
-        }
-    });
+    c.SwaggerDoc("v1", new OpenApiInfo { Title = "MyProject API", Version = "v1" });
 });
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
@@ -37,22 +35,19 @@ if (!app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+app.UseStaticFiles();
 
-// Раздача статических файлов
-app.UseStaticFiles(); 
-
-// --- ВКЛЮЧАЕМ SWAGGER UI ---
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "MyProject API v1");
 });
 
-// --- ЖИЗНЕННЫЙ ЦИКЛ ---
 app.UseMiddleware<LifecycleMiddleware>();
-
 app.UseRouting();
 
+// --- ВАЖНО: Authentication всегда ДО Authorization ---
+app.UseAuthentication(); // <--- ДОБАВИТЬ ЭТО
 app.UseAuthorization();
 
 app.MapControllerRoute(
